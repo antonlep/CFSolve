@@ -1,18 +1,19 @@
 #!/bin/bash
-# Portable script to build C++ solver and copy to Windows GUI folder
+# Portable script to build C++ solver and copy to GUI folder
 # Requires: CMake, pybind11, Eigen installed in WSL
 
 # Load user config
-CONFIG_FILE="build_tools/config.sh"
-if [ ! -f "$CONFIG_FILE" ]; then
-    echo "❌ Config file $CONFIG_FILE not found!"
-    echo "Please copy config.sh.example → config.sh and edit the WINDOWS_GUI_DIR path"
-    exit 1
-fi
-source "$CONFIG_FILE"
+# CONFIG_FILE="build_tools/config.sh"
+# if [ ! -f "$CONFIG_FILE" ]; then
+#     echo "❌ Config file $CONFIG_FILE not found!"
+#     echo "Please copy config.sh.example → config.sh and edit the GUI_DIR path"
+#     exit 1
+# fi
+# source "$CONFIG_FILE"
 
 # Directories
 SOLVER_DIR="solver"
+GUI_DIR="gui"
 BUILD_DIR="$SOLVER_DIR/build"
 
 echo "=== Building C++ solver with CMake ==="
@@ -32,12 +33,12 @@ fi
 echo "Found solver module: $SO_FILE"
 
 # Copy it into Windows Python GUI folder
-if [ -z "$WINDOWS_GUI_DIR" ]; then
-    echo "❌ WINDOWS_GUI_DIR is not set in config.sh!"
+if [ -z "$GUI_DIR" ]; then
+    echo "❌ GUI_DIR is not set in config.sh!"
     exit 1
 fi
 
-echo "=== Copying .so to Windows GUI folder ==="
-cp "$SO_FILE" "$WINDOWS_GUI_DIR/solver.so" || { echo "❌ Copy failed"; exit 1; }
+echo "=== Copying .so to GUI folder ==="
+cp "$SO_FILE" "$GUI_DIR/solver.so" || { echo "❌ Copy failed"; exit 1; }
 
-echo "✔ Successfully copied solver.so → $WINDOWS_GUI_DIR"
+echo "✔ Successfully copied solver.so → $GUI_DIR"
