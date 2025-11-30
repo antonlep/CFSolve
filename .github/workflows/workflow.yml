@@ -9,7 +9,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang clang-tidy clang-format cmake
+          sudo apt-get install -y clang clang-tidy clang-format cmake libeigen3-dev
           pip install "pybind11[global]"
 
       - name: Configure cmake
