@@ -23,24 +23,24 @@ jobs:
         run: |
           cmake -S solver -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 
-      - name: Run clang-format
+      - name: Clang-format
         run: |
           find solver -name '*.cpp' -o -name '*.hpp' | xargs clang-format --dry-run --Werror -style=file -i
           git diff --exit-code
 
-      - name: Run clang-tidy
+      - name: Clang-tidy
         run: |
           clang-tidy solver/*.cpp -p build
 
-      - name: Run isort
+      - name: Isort
         run: |
           poetry run isort -c .
 
-      - name: Run black
+      - name: Black
         run: |
           poetry run black --check .
 
-      - name: Run flake8
+      - name: Flake8
         run: |
           poetry run flake8 .
       
