@@ -6,16 +6,17 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - name: install dependencies
+      - name: Install dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y clang clang-tidy clang-format cmake
+          pip3 install pybind11
 
-      - name: configure cmake
+      - name: Configure cmake
         run: |
           cmake -S solver -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 
-      - name: check clang-format
+      - name: Check clang-format
         run: |
           find solver -name '*.cpp' -o -name '*.hpp' | xargs clang-format -style=file -i
           git diff --exit-code
