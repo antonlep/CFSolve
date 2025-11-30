@@ -13,14 +13,14 @@ jobs:
 
       - name: configure cmake
         run: |
-          cmake -S cpp_solver -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+          cmake -S solver -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 
       - name: check clang-format
         run: |
-          find cpp_solver -name '*.cpp' -o -name '*.hpp' | xargs clang-format -style=file -i
+          find solver -name '*.cpp' -o -name '*.hpp' | xargs clang-format -style=file -i
           git diff --exit-code
 
       - name: Run clang-tidy
         run: |
-          clang-tidy cpp_solver/*.cpp -p build
+          clang-tidy solver/*.cpp -p build
       
