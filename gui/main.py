@@ -1,80 +1,100 @@
 import sys
 
-from PySide6.QtCore import QSize, Qt
-from PySide6.QtGui import QAction
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QApplication,
-    QLabel,
+    QCheckBox,
+    QComboBox,
+    QLineEdit,
+    QListWidget,
     QMainWindow,
-    QMenu,
+    QVBoxLayout,
+    QWidget,
 )
-
-import solver
 
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setMouseTracking(True)
-        self.label = QLabel("Click in this window")
-        self.label.setMouseTracking(True)
-        self.setCentralWidget(self.label)
-        self.setFixedSize(QSize(400, 300))
 
-    def contextMenuEvent(self, e):
-        context = QMenu(self)
-        context.addAction(QAction("test 1", self))
-        context.addAction(QAction("test 2", self))
-        context.addAction(QAction("test 3", self))
-        context.exec(e.globalPos())
+        self.setWindowTitle("My App")
 
-    def mousePressEvent(self, e):
-        if e.button() == Qt.MouseButton.LeftButton:
-            # handle the left-button press in here
-            self.label.setText("mousePressEvent LEFT")
+        layout = QVBoxLayout()
 
-        elif e.button() == Qt.MouseButton.MiddleButton:
-            # handle the middle-button press in here.
-            self.label.setText("mousePressEvent MIDDLE")
+        checkbox = QCheckBox("This is a checkbox")
+        checkbox.setCheckState(Qt.CheckState.Checked)
 
-        elif e.button() == Qt.MouseButton.RightButton:
-            # handle the right-button press in here.
-            self.label.setText("mousePressEvent RIGHT")
+        # For tristate: checkbox.setCheckState(Qt.CheckState.PartiallyChecked)
+        # Or: checkbox.setTristate(True)
+        checkbox.stateChanged.connect(self.show_state)
+        layout.addWidget(checkbox)
 
-    def mouseReleaseEvent(self, e):
-        if e.button() == Qt.MouseButton.LeftButton:
-            self.label.setText("mouseReleaseEvent LEFT")
+        combobox = QComboBox()
+        combobox.addItems(["One", "Two", "Three"])
 
-        elif e.button() == Qt.MouseButton.MiddleButton:
-            self.label.setText("mouseReleaseEvent MIDDLE")
+        # The default signal from currentIndexChanged sends the index
+        combobox.currentIndexChanged.connect(self.index_changed)
 
-        elif e.button() == Qt.MouseButton.RightButton:
-            self.label.setText("mouseReleaseEvent RIGHT")
+        # The same signal can send a text string
+        combobox.currentTextChanged.connect(self.text_changed)
+        layout.addWidget(combobox)
 
-    def mouseDoubleClickEvent(self, e):
-        if e.button() == Qt.MouseButton.LeftButton:
-            self.label.setText("mouseDoubleClickEvent LEFT")
+        listwidget = QListWidget()
+        listwidget.addItems(["One", "Two", "Three"])
 
-        elif e.button() == Qt.MouseButton.MiddleButton:
-            self.label.setText("mouseDoubleClickEvent MIDDLE")
+        # In QListWidget there are two separate signals for the item
+        listwidget.currentItemChanged.connect(self.index_changed_list)
+        listwidget.currentTextChanged.connect(self.text_changed)
+        layout.addWidget(listwidget)
 
-        elif e.button() == Qt.MouseButton.RightButton:
-            self.label.setText("mouseDoubleClickEvent RIGHT")
+        self.lineedit = QLineEdit()
+        self.lineedit.setMaxLength(10)
+        self.lineedit.setPlaceholderText("Enter your text")
+
+        # self.lineedit.setReadOnly(True) # uncomment this to make readonly
+
+        self.lineedit.returnPressed.connect(self.return_pressed)
+        self.lineedit.selectionChanged.connect(self.selection_changed)
+        self.lineedit.textChanged.connect(self.text_changed_line)
+        self.lineedit.textEdited.connect(self.text_edited)
+        layout.addWidget(self.lineedit)
+
+        central_widget = QWidget()
+        central_widget.setLayout(layout)
+
+        self.setCentralWidget(central_widget)
+
+    def show_state(self, state):
+        print(state == Qt.CheckState.Checked.value)
+        print(state)
+
+    def index_changed(self, index):  # index is an int starting from 0
+        print(index)
+
+    def index_changed_list(self, index):  # index is an int starting from 0
+        print(index.text())
+
+    def text_changed(self, text):  # text is a str
+        print(text)
+
+    def return_pressed(self):
+        print("Return pressed!")
+        self.lineedit.setText("BOOM!")
+
+    def selection_changed(self):
+        print("Selection changed")
+        print(self.lineedit.selectedText())
+
+    def text_changed_line(self, text):
+        print("Text changed...")
+        print(text)
+
+    def text_edited(self, text):
+        print("Text edited...")
+        print(text)
 
 
 app = QApplication(sys.argv)
-
 window = MainWindow()
 window.show()
-
-# Run the application's event loop
 app.exec()
-
-# from gui import show_solution
-
-# mesh = load_mesh("triangle.msh")
-# u = solver.solve_poisson(mesh)
-# show_solution(mesh, u)
-
-u = solver.add(2, 3)
-print(u)
