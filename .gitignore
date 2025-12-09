@@ -3,3 +3,4 @@ build_tools/config.sh
 solver/build
 build
 .cache
+__pycache__
