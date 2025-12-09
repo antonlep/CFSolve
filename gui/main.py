@@ -8,6 +8,8 @@ from PySide6.QtWidgets import (
     QLineEdit,
     QListWidget,
     QMainWindow,
+    QSlider,
+    QSpinBox,
     QVBoxLayout,
     QWidget,
 )
@@ -59,6 +61,32 @@ class MainWindow(QMainWindow):
         self.lineedit.textEdited.connect(self.text_edited)
         layout.addWidget(self.lineedit)
 
+        spinbox = QSpinBox()
+        # Or: doublespinbox = QDoubleSpinBox()
+
+        spinbox.setMinimum(-10)
+        spinbox.setMaximum(3)
+        # Or: spinbox.setRange(-10, 3)
+
+        spinbox.setPrefix("$")
+        spinbox.setSuffix("c")
+        spinbox.setSingleStep(3)  # Or setSingleStep(3.0) for QDoubleSpinBox
+        spinbox.valueChanged.connect(self.value_changed)
+        spinbox.textChanged.connect(self.value_changed_str)
+        spinbox.lineEdit().setReadOnly(True)
+        layout.addWidget(spinbox)
+
+        slider = QSlider()
+        slider.setMinimum(-10)
+        slider.setMaximum(3)
+        slider.setSingleStep(3)
+
+        slider.valueChanged.connect(self.value_changed)
+        slider.sliderMoved.connect(self.slider_position)
+        slider.sliderPressed.connect(self.slider_pressed)
+        slider.sliderReleased.connect(self.slider_released)
+        layout.addWidget(slider)
+
         central_widget = QWidget()
         central_widget.setLayout(layout)
 
@@ -92,6 +120,21 @@ class MainWindow(QMainWindow):
     def text_edited(self, text):
         print("Text edited...")
         print(text)
+
+    def value_changed(self, value):
+        print(value)
+
+    def value_changed_str(self, str_value):
+        print(str_value)
+
+    def slider_position(self, position):
+        print("position", position)
+
+    def slider_pressed(self):
+        print("Pressed!")
+
+    def slider_released(self):
+        print("Released")
 
 
 app = QApplication(sys.argv)
