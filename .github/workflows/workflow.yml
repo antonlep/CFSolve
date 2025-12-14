@@ -14,7 +14,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          # sudo apt-get install -y clang clang-tidy clang-format cmake
+          sudo apt-get install -y clang clang-tidy clang-format cmake
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install -r requirements-dev.txt
@@ -24,14 +24,14 @@ jobs:
         # run: |
           # cmake -S solver -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 
-      # - name: Clang-format
-        # run: |
-          # find solver -name '*.cpp' -o -name '*.hpp' | xargs clang-format --dry-run --Werror -style=file -i
-          # git diff --exit-code
+      - name: Clang-format
+        run: |
+          find solver -name '*.cpp' -o -name '*.hpp' | xargs clang-format --dry-run --Werror -style=file -i
+          git diff --exit-code
 
-      # - name: Clang-tidy
-        # run: |
-          # clang-tidy solver/*.cpp -p build
+      - name: Clang-tidy
+        run: |
+          clang-tidy solver/*.cpp -p build
 
       - name: Black
         run: |
