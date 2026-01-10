@@ -20,22 +20,22 @@ jobs:
 
       - name: Configure cmake
         run: |
-          cmake -S solver -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+          cmake -S src/solver -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 
       - name: Clang-format
         run: |
-          find solver \( -name "*.cpp" -o -name "*.hpp" \) -not -path "solver/third_party/*" | xargs clang-format --dry-run --Werror -i
+          find solver \( -name "*.cpp" -o -name "*.hpp" \) -not -path "src/solver/third_party/*" | xargs clang-format --dry-run --Werror -i
           git diff --exit-code
 
       - name: Clang-tidy
         run: |
-          clang-tidy solver/*.cpp -p build
+          clang-tidy src/solver/*.cpp -p build
 
       - name: Black
         run: |
-          black --check gui
+          black --check src/gui
 
       - name: Flake8
         run: |
-          flake8 gui
+          flake8 src/gui
       
