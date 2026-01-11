@@ -34,19 +34,40 @@ class MainWindow(QMainWindow):
         central_widget.setLayout(layout)
         self.setCentralWidget(central_widget)
 
+        label1 = QLabel("height:")
+        layout2.addWidget(label1)
         self.box1 = QSpinBox()
-        self.box1.setValue(4)
+        self.box1.setValue(10)
         layout2.addWidget(self.box1)
 
+        label2 = QLabel("width:")
+        layout2.addWidget(label2)
         self.box2 = QSpinBox()
-        self.box2.setValue(4)
+        self.box2.setValue(20)
         layout2.addWidget(self.box2)
+
+        label3 = QLabel("thickness:")
+        layout2.addWidget(label3)
+        self.box3 = QSpinBox()
+        self.box3.setValue(1)
+        layout2.addWidget(self.box3)
+
+        label4 = QLabel("force:")
+        layout2.addWidget(label4)
+        self.box4 = QSpinBox()
+        self.box4.setMinimum(0)
+        self.box4.setMaximum(10000)
+        self.box4.setValue(1000)
+        self.box4.setSingleStep(1000)
+        layout2.addWidget(self.box4)
 
         button = QPushButton("Solve")
         button.setCheckable(True)
         button.clicked.connect(self.the_button_was_clicked)
         layout2.addWidget(button)
 
+        label5 = QLabel("displacement:")
+        layout2.addWidget(label5)
         self.label = QLabel()
         layout2.addWidget(self.label)
 
@@ -56,7 +77,9 @@ class MainWindow(QMainWindow):
     def the_button_was_clicked(self):
         box1 = self.box1.value()
         box2 = self.box2.value()
-        result = solver.plate(box1, box2, box1, box2)
+        box3 = self.box3.value()
+        box4 = self.box4.value()
+        result = solver.plate(box1, box2, box3, box4)
         self.label.setText(str(result))
         print(f"Result: {result}")
         # Create the spatial reference

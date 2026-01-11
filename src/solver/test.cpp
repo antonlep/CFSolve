@@ -3,7 +3,7 @@
 
 int main() {
 
-  std::cout << plate(4, 4, 4, 4) << std::endl;
+  std::cout << plate(10, 20, 1, 1000000) << std::endl;
 
   return 0;
 }
