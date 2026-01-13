@@ -82,27 +82,13 @@ class MainWindow(QMainWindow):
         result = solver.plate(box1, box2, box3, box4)
         self.label.setText(str(result))
         print(f"Result: {result}")
-        # Create the spatial reference
         grid = pv.ImageData()
+        grid.dimensions = (box1 + 1, box2 + 1, box3 + 1)
 
-        values = np.linspace(0, 1, box1 * box2).reshape((box1, box2, 1))
-        values.shape
-
-        # Set the grid dimensions: shape + 1 because we want to inject our values on
-        #   the CELL data
-        grid.dimensions = np.array(values.shape) + 1
-
-        # Edit the spatial reference
         grid.origin = (0, 0, 0)  # The bottom left corner of the data set
         grid.spacing = (1, 1, 1)  # These are the cell sizes along each axis
-
-        # Now plot the grid
-        # grid.plot(show_edges=True)
         self.plotter.clear()
-        # self.plotter.show_grid()
         self.plotter.add_mesh(grid, show_edges=True)
-        # Add the data values to the cell data
-        # grid.cell_data["values"] = values.flatten(order="F")  # Flatten the array
 
 
 app = QApplication(sys.argv)
