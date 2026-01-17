@@ -108,16 +108,25 @@ double plate(double h, double w, double t, double f) {
   double E = 210E6;
   double v = 0.3;
   f = 0.5 * f;
-  Nodes nodes = {Node{0, 0},  Node{0, 10}, Node{20, 10},
-                 Node{20, 0}, Node{30, 0}, Node{30, 10}};
+  Node node1 = {0, 0};
+  Node node2 = {0, 10};
+  Node node3 = {20, 10};
+  Node node4 = {20, 0};
+  Node node5 = {30, 0};
+  Node node6 = {30, 10};
+  Nodes nodes = {node1, node2, node3, node4, node5, node6};
   int dofs = nodes.size() * 2;
   Elem elem1 = {0, 2, 1};
   Elem elem2 = {0, 3, 2};
   Elem elem3 = {2, 3, 5};
   Elem elem4 = {3, 4, 5};
   Elems elems = {elem1, elem2, elem3, elem4};
+  // std::vector<size_t> ind_zero = {0, 1, 2, 3, 8, 10};
+  // VectorXd F{{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
+  // VectorXd u_initial{{0, 0, 0, 0, 0, 0, 0, 0, 0.014, 0, 0.014, 0}};
   std::vector<size_t> ind_zero = {0, 1, 2, 3};
   VectorXd F{{0, 0, 0, 0, 0, 0, 0, 0, f, 0, f, 0}};
+  VectorXd u_initial{{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
 
   MatrixXd K = MatrixXd::Zero(dofs, dofs);
   for (Elem e : elems) {
@@ -125,13 +134,18 @@ double plate(double h, double w, double t, double f) {
     update_global_stiffness(K, K1, e);
   }
 
+  for (size_t k = 0; k < ind_zero.size(); ++k) {
+    int j = ind_zero[k];
+    F -= K.col(j) * u_initial(j);
+  }
+
   std::unordered_set<size_t> remove(ind_zero.begin(), ind_zero.end());
   std::vector<size_t> ind_nonzero;
   for (int i = 0; i < dofs; ++i) {
     if (!remove.count(i)) {
       ind_nonzero.push_back(i);
-    };
-  };
+    }
+  }
 
   Eigen::VectorXi ind_nonzero_eig(ind_nonzero.size());
   for (int i = 0; i < ind_nonzero.size(); ++i) {
@@ -145,9 +159,12 @@ double plate(double h, double w, double t, double f) {
   VectorXd u_nonzero = K_nonzero.colPivHouseholderQr().solve(F_nonzero);
 
   VectorXd u = VectorXd::Zero(dofs);
-  for (int i = 0; i < u_nonzero.size(); i++) {
+  for (int i = 0; i < u_nonzero.size(); ++i)
     u(ind_nonzero_eig[i]) = u_nonzero(i);
-  };
+
+  for (size_t k = 0; k < ind_zero.size(); ++k)
+    u(ind_zero[k]) = u_initial(ind_zero[k]);
+
   std::cout << "u\n";
   std::cout << u << "\n";
   std::cout << "\n";

@@ -1,6 +1,5 @@
 import sys
 
-import numpy as np
 import pyvista as pv
 import pyvistaqt as pvqt
 from PySide6.QtCore import QSize
