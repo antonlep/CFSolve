@@ -1,9 +1,12 @@
 #include "fem.h"
+#include "read_file.h"
 #include <iostream>
 
 int main() {
 
-  std::cout << plate(10, 20, 1, 1000000) << std::endl;
+  Res input_files = read_file("fem2.inp");
+
+  std::cout << fem(input_files) << std::endl;
 
   return 0;
 }

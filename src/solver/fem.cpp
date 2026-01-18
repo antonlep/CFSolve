@@ -1,25 +1,9 @@
 #include "Eigen/Core"
-#include <Eigen/Dense>
+#include "read_file.h"
 #include <iostream>
 #include <unordered_set>
-#include <vector>
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
-using Index = Eigen::Index;
-using Dir = std::size_t;
-using NodeId = Index;
-struct Node {
-  double x;
-  double y;
-};
-struct Disp {
-  Index dir;
-  double mag;
-};
-using Nodes = std::vector<Node>;
-using Elem = std::vector<NodeId>;
-using Elems = std::vector<Elem>;
-using Dirs = std::vector<Dir>;
 
 double area(Node i, Node j, Node k) {
   return 0.5 * (i.x * (j.y - k.y) + j.x * (k.y - i.y) + k.x * (i.y - j.y));
@@ -104,29 +88,36 @@ VectorXd element_stress(double E, double v, double t, const Nodes &all_nodes,
 
 int add(int a, int b) { return a + b; }
 
-double plate(double h, double w, double t, double f) {
+double fem(const Res &input_files) {
   double E = 210E6;
   double v = 0.3;
-  f = 0.5 * f;
-  Node node1 = {0, 0};
-  Node node2 = {0, 10};
-  Node node3 = {20, 10};
-  Node node4 = {20, 0};
-  Node node5 = {30, 0};
-  Node node6 = {30, 10};
-  Nodes nodes = {node1, node2, node3, node4, node5, node6};
+  double t = 1;
+  // Node node1 = {0, 0};
+  // Node node2 = {0, 10};
+  // Node node3 = {20, 10};
+  // Node node4 = {20, 0};
+  // Node node5 = {30, 0};
+  // Node node6 = {30, 10};
+  // Nodes nodes = {node1, node2, node3, node4, node5, node6};
+  // int dofs = nodes.size() * 2;
+  // Elem elem1 = {0, 2, 1};
+  // Elem elem2 = {0, 3, 2};
+  // Elem elem3 = {2, 3, 5};
+  // Elem elem4 = {3, 4, 5};
+  // Elems elems = {elem1, elem2, elem3, elem4};
+  // // std::vector<size_t> ind_zero = {0, 1, 2, 3, 8, 10};
+  // // VectorXd F{{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
+  // // VectorXd u_initial{{0, 0, 0, 0, 0.014, 0.014}};
+  // std::vector<size_t> ind_zero = {0, 1, 2, 3};
+  // VectorXd F{{0, 0, 0, 0, 0, 0, 0, 0, 100, 0, 100, 0}};
+  // VectorXd u_initial{{0, 0, 0, 0}};
+  Nodes nodes = input_files.nodes;
+  Elems elems = input_files.elems;
+  std::vector<size_t> ind_zero = input_files.ind_zero;
+  std::vector<double> u_initial = input_files.u_initial;
+  VectorXd F =
+      Eigen::Map<const VectorXd>(input_files.F.data(), input_files.F.size());
   int dofs = nodes.size() * 2;
-  Elem elem1 = {0, 2, 1};
-  Elem elem2 = {0, 3, 2};
-  Elem elem3 = {2, 3, 5};
-  Elem elem4 = {3, 4, 5};
-  Elems elems = {elem1, elem2, elem3, elem4};
-  // std::vector<size_t> ind_zero = {0, 1, 2, 3, 8, 10};
-  // VectorXd F{{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
-  // VectorXd u_initial{{0, 0, 0, 0, 0, 0, 0, 0, 0.014, 0, 0.014, 0}};
-  std::vector<size_t> ind_zero = {0, 1, 2, 3};
-  VectorXd F{{0, 0, 0, 0, 0, 0, 0, 0, f, 0, f, 0}};
-  VectorXd u_initial{{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
 
   MatrixXd K = MatrixXd::Zero(dofs, dofs);
   for (Elem e : elems) {
@@ -136,7 +127,7 @@ double plate(double h, double w, double t, double f) {
 
   for (size_t k = 0; k < ind_zero.size(); ++k) {
     int j = ind_zero[k];
-    F -= K.col(j) * u_initial(j);
+    F -= K.col(j) * u_initial[k];
   }
 
   std::unordered_set<size_t> remove(ind_zero.begin(), ind_zero.end());
@@ -163,7 +154,7 @@ double plate(double h, double w, double t, double f) {
     u(ind_nonzero_eig[i]) = u_nonzero(i);
 
   for (size_t k = 0; k < ind_zero.size(); ++k)
-    u(ind_zero[k]) = u_initial(ind_zero[k]);
+    u(ind_zero[k]) = u_initial[k];
 
   std::cout << "u\n";
   std::cout << u << "\n";

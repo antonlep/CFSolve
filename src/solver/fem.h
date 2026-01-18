@@ -1,8 +1,9 @@
 #ifndef FEM_H
 #define FEM_H
+#include "read_file.h"
 
 int add(int a, int b);
 
-double plate(double h, double w, double t, double f);
+double fem(const Res &input_files);
 
 #endif
