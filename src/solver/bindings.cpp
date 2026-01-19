@@ -1,5 +1,9 @@
 #include "fem.h"
+#include "read_file.h"
 #include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
+
+namespace py = pybind11;
 
 PYBIND11_MODULE(solver /*unused*/, m /*unused*/) {
   // py::class_<Mesh>(m, "Mesh")
@@ -10,9 +14,10 @@ PYBIND11_MODULE(solver /*unused*/, m /*unused*/) {
   // m.def("solve_poisson", &solve_poisson, "A function that solves poisson
   // equation");
 
-  m.def("add", &add, "A function that adds two numbers", pybind11::arg("a"),
-        pybind11::arg("b"));
+  m.def("add", &add, "A function that adds two numbers", py::arg("a"),
+        py::arg("b"));
 
-  m.def("plate", &plate, "A functionnumbers", pybind11::arg("h"),
-        pybind11::arg("w"), pybind11::arg("t"), pybind11::arg("f"));
+  m.def("solve_from_data", &solve_from_data, "solve from data",
+        py::arg("node_coords"), py::arg("elements"), py::arg("u_indices"),
+        py::arg("u"), py::arg("f"));
 }

@@ -11,6 +11,7 @@ pybind11_add_module(solver
     bindings.cpp
     fem.cpp
     mesh.cpp
+    read_file.cpp
 )
 
 target_link_libraries(solver PRIVATE Eigen3::Eigen)

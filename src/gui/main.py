@@ -78,7 +78,12 @@ class MainWindow(QMainWindow):
         box2 = self.box2.value()
         box3 = self.box3.value()
         box4 = self.box4.value()
-        result = solver.plate(box1, box2, box3, box4)
+        nodes = [[0, 0], [0, 10], [20, 10], [20, 0], [30, 0], [30, 10]]
+        elements = [[0, 2, 1], [0, 3, 2], [2, 3, 5], [3, 4, 5]]
+        fixed = [0, 1, 2, 3]
+        displacements = [0, 0, 0, 0]
+        forces = [0, 0, 0, 0, box4, box4]
+        result = solver.solve_from_data(nodes, elements, fixed, displacements, forces)
         self.label.setText(str(result))
         print(f"Result: {result}")
         grid = pv.ImageData()

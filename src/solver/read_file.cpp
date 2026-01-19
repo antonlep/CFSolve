@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-Res read_file(std::string filename) {
+SolverInput read_file(std::string filename) {
 
   std::fstream myfile;
 
@@ -14,8 +14,8 @@ Res read_file(std::string filename) {
   std::vector<std::string> g1;
   Nodes nodes;
   Elems elems;
-  std::vector<size_t> ind_zero;
-  std::vector<double> u_initial;
+  std::vector<size_t> u_indices;
+  std::vector<double> u;
   std::vector<double> F;
 
   if (myfile.is_open()) {
@@ -73,8 +73,8 @@ Res read_file(std::string filename) {
         std::istringstream iss(str);
         char sep = ',';
         iss >> node >> sep >> coord >> sep >> disp;
-        ind_zero.push_back(node * 2 + coord);
-        u_initial.push_back(disp);
+        u_indices.push_back(node * 2 + coord);
+        u.push_back(disp);
       }
     }
     myfile.clear();
@@ -101,6 +101,6 @@ Res read_file(std::string filename) {
     myfile.close();
   }
 
-  Res result = {nodes, elems, ind_zero, u_initial, F};
-  return result;
+  SolverInput input = {nodes, elems, u_indices, u, F};
+  return input;
 }

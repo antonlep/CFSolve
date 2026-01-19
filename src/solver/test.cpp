@@ -4,9 +4,9 @@
 
 int main() {
 
-  Res input_files = read_file("fem2.inp");
+  SolverInput input = read_file("fem2.inp");
 
-  std::cout << fem(input_files) << std::endl;
+  std::cout << solve(input) << std::endl;
 
   return 0;
 }

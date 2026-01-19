@@ -13,14 +13,14 @@ using Nodes = std::vector<Node>;
 using Elem = std::vector<NodeId>;
 using Elems = std::vector<Elem>;
 
-struct Res {
+struct SolverInput {
   Nodes nodes;
   Elems elems;
-  std::vector<size_t> ind_zero;
-  std::vector<double> u_initial;
+  std::vector<size_t> u_indices;
+  std::vector<double> u;
   std::vector<double> F;
 };
 
-Res read_file(std::string filename);
+SolverInput read_file(std::string filename);
 
 #endif

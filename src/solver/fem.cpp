@@ -88,7 +88,30 @@ VectorXd element_stress(double E, double v, double t, const Nodes &all_nodes,
 
 int add(int a, int b) { return a + b; }
 
-double fem(const Res &input_files) {
+SolverInput make_input_from_file(const std::string &path) {
+  return read_file(path);
+};
+
+SolverInput
+make_input_from_parameters(const std::vector<std::vector<double>> &node_coords,
+                           const std::vector<std::vector<int>> &elements,
+                           const std::vector<int> &u_indices,
+                           const std::vector<double> &u,
+                           const std::vector<double> &f) {
+  Nodes nodes;
+  Elems elems;
+  for (std::vector<double> n : node_coords) {
+    nodes.push_back(Node{n[0], n[1]});
+  }
+  for (std::vector<int> e : elements) {
+    elems.push_back(Elem{e[0], e[1], e[2]});
+  }
+  std::vector<size_t> u_indices_t(u_indices.begin(), u_indices.end());
+  SolverInput input{nodes, elems, u_indices_t, u, f};
+  return input;
+};
+
+double solve(const SolverInput &input) {
   double E = 210E6;
   double v = 0.3;
   double t = 1;
@@ -111,12 +134,11 @@ double fem(const Res &input_files) {
   // std::vector<size_t> ind_zero = {0, 1, 2, 3};
   // VectorXd F{{0, 0, 0, 0, 0, 0, 0, 0, 100, 0, 100, 0}};
   // VectorXd u_initial{{0, 0, 0, 0}};
-  Nodes nodes = input_files.nodes;
-  Elems elems = input_files.elems;
-  std::vector<size_t> ind_zero = input_files.ind_zero;
-  std::vector<double> u_initial = input_files.u_initial;
-  VectorXd F =
-      Eigen::Map<const VectorXd>(input_files.F.data(), input_files.F.size());
+  Nodes nodes = input.nodes;
+  Elems elems = input.elems;
+  std::vector<size_t> u_indices = input.u_indices;
+  std::vector<double> u_initial = input.u;
+  VectorXd F = Eigen::Map<const VectorXd>(input.F.data(), input.F.size());
   int dofs = nodes.size() * 2;
 
   MatrixXd K = MatrixXd::Zero(dofs, dofs);
@@ -125,12 +147,12 @@ double fem(const Res &input_files) {
     update_global_stiffness(K, K1, e);
   }
 
-  for (size_t k = 0; k < ind_zero.size(); ++k) {
-    int j = ind_zero[k];
+  for (size_t k = 0; k < u_indices.size(); ++k) {
+    int j = u_indices[k];
     F -= K.col(j) * u_initial[k];
   }
 
-  std::unordered_set<size_t> remove(ind_zero.begin(), ind_zero.end());
+  std::unordered_set<size_t> remove(u_indices.begin(), u_indices.end());
   std::vector<size_t> ind_nonzero;
   for (int i = 0; i < dofs; ++i) {
     if (!remove.count(i)) {
@@ -153,8 +175,8 @@ double fem(const Res &input_files) {
   for (int i = 0; i < u_nonzero.size(); ++i)
     u(ind_nonzero_eig[i]) = u_nonzero(i);
 
-  for (size_t k = 0; k < ind_zero.size(); ++k)
-    u(ind_zero[k]) = u_initial[k];
+  for (size_t k = 0; k < u_indices.size(); ++k)
+    u(u_indices[k]) = u_initial[k];
 
   std::cout << "u\n";
   std::cout << u << "\n";
@@ -169,3 +191,14 @@ double fem(const Res &input_files) {
 
   return u_nonzero(0);
 }
+
+double solve_from_data(const std::vector<std::vector<double>> &node_coords,
+                       const std::vector<std::vector<int>> &elements,
+                       const std::vector<int> &u_indices,
+                       const std::vector<double> &u,
+                       const std::vector<double> &f) {
+  SolverInput input =
+      make_input_from_parameters(node_coords, elements, u_indices, u, f);
+  double res = solve(input);
+  return res;
+};
