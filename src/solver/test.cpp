@@ -1,12 +1,9 @@
 #include "fem.h"
-#include "read_file.h"
 #include <iostream>
 
 int main() {
 
-  SolverInput input = read_file("fem2.inp");
-
-  std::cout << solve(input) << std::endl;
+  std::cout << solve_from_file("fem2.inp") << std::endl;
 
   return 0;
 }

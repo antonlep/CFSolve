@@ -202,3 +202,9 @@ double solve_from_data(const std::vector<std::vector<double>> &node_coords,
   double res = solve(input);
   return res;
 };
+
+double solve_from_file(const std::string &path) {
+  SolverInput input = make_input_from_file(path);
+  double res = solve(input);
+  return res;
+};

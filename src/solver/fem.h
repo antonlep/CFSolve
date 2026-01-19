@@ -10,4 +10,6 @@ double solve_from_data(const std::vector<std::vector<double>> &node_coords,
                        const std::vector<double> &u,
                        const std::vector<double> &f);
 
+double solve_from_file(const std::string &path);
+
 #endif
