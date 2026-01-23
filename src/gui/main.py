@@ -90,11 +90,14 @@ class MainWindow(QMainWindow):
         points = [[x, y, 0.0] for x, y in nodes]
         grid = pv.UnstructuredGrid(cells, celltypes, points)
         results = solver.solve_from_data(nodes, elements, fixed, displacements, forces)
-        cell_scalars = [i[0] for i in results]
-        grid.cell_data["Stress"] = cell_scalars
+        point_scalars = [i[0] for i in results.disp]
+        # grid.cell_data["Stress"] = cell_scalars
+        grid.point_data["Displacement"] = point_scalars
         self.plotter.clear()
         self.plotter.add_axes_at_origin()
-        self.plotter.add_mesh(grid, show_edges=True, scalars="Stress", cmap="rainbow")
+        self.plotter.add_mesh(
+            grid, show_edges=True, scalars="Displacement", cmap="rainbow"
+        )
 
 
 app = QApplication(sys.argv)

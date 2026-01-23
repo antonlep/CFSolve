@@ -21,6 +21,11 @@ struct SolverInput {
   std::vector<double> F;
 };
 
+struct SolverOutput {
+  std::vector<std::vector<double>> stress;
+  std::vector<std::vector<double>> disp;
+};
+
 SolverInput read_file(std::string filename);
 
 #endif
