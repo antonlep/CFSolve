@@ -11,6 +11,7 @@ from PySide6.QtWidgets import (
     QSpinBox,
     QVBoxLayout,
     QWidget,
+    QComboBox,
 )
 
 import solver
@@ -45,7 +46,7 @@ class MainWindow(QMainWindow):
         self.box2.setValue(20)
         layout2.addWidget(self.box2)
 
-        label4 = QLabel("force:")
+        label4 = QLabel("force x:")
         layout2.addWidget(label4)
         self.box4 = QSpinBox()
         self.box4.setMinimum(0)
@@ -53,6 +54,21 @@ class MainWindow(QMainWindow):
         self.box4.setValue(1000)
         self.box4.setSingleStep(1000)
         layout2.addWidget(self.box4)
+
+        label6 = QLabel("force y:")
+        layout2.addWidget(label6)
+        self.box6 = QSpinBox()
+        self.box6.setMinimum(0)
+        self.box6.setMaximum(10000)
+        self.box6.setValue(1000)
+        self.box6.setSingleStep(1000)
+        layout2.addWidget(self.box6)
+
+        label5 = QLabel("plot:")
+        layout2.addWidget(label5)
+        self.box5 = QComboBox()
+        self.box5.addItems(["stress x", "stress y", "shear xy", "disp x", "disp y"])
+        layout2.addWidget(self.box5)
 
         button = QPushButton("Solve")
         button.setCheckable(True)
@@ -70,7 +86,8 @@ class MainWindow(QMainWindow):
     def the_button_was_clicked(self):
         height = self.box1.value()
         width = self.box2.value()
-        force = self.box4.value()
+        force_x = self.box4.value()
+        force_y = self.box6.value()
         nodes = [
             [0, 0],
             [0, height],
@@ -82,7 +99,20 @@ class MainWindow(QMainWindow):
         elements = [[0, 2, 1], [0, 3, 2], [2, 3, 5], [3, 4, 5]]
         fixed = [0, 1, 2, 3]
         displacements = [0, 0, 0, 0]
-        forces = [0, 0, 0, 0, 0, 0, 0, 0, force / 2, 0, force / 2, 0]
+        forces = [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            force_x / 2,
+            force_y / 2,
+            force_x / 2,
+            force_y / 2,
+        ]
         cells = []
         for e in elements:
             cells.extend([3, *e])
@@ -90,14 +120,25 @@ class MainWindow(QMainWindow):
         points = [[x, y, 0.0] for x, y in nodes]
         grid = pv.UnstructuredGrid(cells, celltypes, points)
         results = solver.solve_from_data(nodes, elements, fixed, displacements, forces)
-        point_scalars = [i[0] for i in results.disp]
-        # grid.cell_data["Stress"] = cell_scalars
-        grid.point_data["Displacement"] = point_scalars
+        result = self.box5.currentText()
+        if result == "stress x":
+            scalars = [i[0] for i in results.stress]
+            grid.cell_data[result] = scalars
+        elif result == "stress y":
+            scalars = [i[1] for i in results.stress]
+            grid.cell_data[result] = scalars
+        elif result == "shear xy":
+            scalars = [i[2] for i in results.stress]
+            grid.cell_data[result] = scalars
+        elif result == "disp x":
+            scalars = [i[0] for i in results.disp]
+            grid.point_data[result] = scalars
+        elif result == "disp y":
+            scalars = [i[1] for i in results.disp]
+            grid.point_data[result] = scalars
         self.plotter.clear()
         self.plotter.add_axes_at_origin()
-        self.plotter.add_mesh(
-            grid, show_edges=True, scalars="Displacement", cmap="rainbow"
-        )
+        self.plotter.add_mesh(grid, show_edges=True, scalars=result, cmap="rainbow")
 
 
 app = QApplication(sys.argv)
