@@ -1,19 +1,16 @@
 #include "read_file.h"
-#include <Eigen/Dense>
 #include <fstream>
-#include <iostream>
 #include <sstream>
 #include <string>
-#include <vector>
 
-SolverInput read_file(std::string filename) {
+SolverInput read_file(const char *filename) {
 
   std::fstream myfile;
 
   myfile.open(filename);
   std::vector<std::string> g1;
   Nodes nodes;
-  Elems elems;
+  Elements elems;
   std::vector<size_t> u_indices;
   std::vector<double> u;
   std::vector<double> F;
@@ -53,7 +50,7 @@ SolverInput read_file(std::string filename) {
         int n1, n2, n3;
         char sep = ',';
         iss >> n1 >> sep >> n2 >> sep >> n3;
-        elems.push_back(Elem{n1, n2, n3});
+        elems.push_back(Element{n1, n2, n3});
       }
     }
     myfile.clear();

@@ -1,10 +1,106 @@
-#include "Eigen/Core"
-#include "read_file.h"
-#include <cstddef>
-#include <iostream>
-#include <unordered_set>
+#include "Eigen/SparseCore"
+#include "fem_types.h"
+#include <Eigen/Dense>
+#include <Eigen/Sparse>
+#include <cassert>
+
 using Eigen::MatrixXd;
+using Eigen::SparseMatrix;
+using Eigen::Triplet;
 using Eigen::VectorXd;
+
+FemResult fem_solve(const Nodes &nodes, const Elems &elems,
+                    const std::vector<int> &fixed_dofs,
+                    const std::vector<double> &fixed_values,
+                    const VectorXd &forces) {
+  assert(!nodes.empty());
+  assert(!elems.empty());
+  const int ndof = 2 * nodes.size();
+  assert(forces.size() == ndof);
+
+  /* =========================
+     1. Allocate global system
+     ========================= */
+
+  SparseMatrix<double> K(ndof, ndof);
+  VectorXd F = forces;
+  VectorXd U = VectorXd::Zero(ndof);
+
+  std::vector<Triplet<double>> triplets;
+  triplets.reserve(elems.size() * 36);
+
+  /* =========================
+     2. Assembly
+     ========================= */
+
+  for (const auto &e : elems) {
+    const Node &n1 = nodes[e[0]];
+    const Node &n2 = nodes[e[1]];
+    const Node &n3 = nodes[e[2]];
+
+    MatrixXd Ke = compute_element_stiffness(n1, n2, n3); // 6x6
+
+    int dofs[6] = {2 * e[0],     2 * e[0] + 1, 2 * e[1],
+                   2 * e[1] + 1, 2 * e[2],     2 * e[2] + 1};
+
+    for (int i = 0; i < 6; ++i)
+      for (int j = 0; j < 6; ++j)
+        triplets.emplace_back(dofs[i], dofs[j], Ke(i, j));
+  }
+
+  K.setFromTriplets(triplets.begin(), triplets.end());
+
+  /* =========================
+     3. Apply Dirichlet BCs
+     ========================= */
+
+  assert(fixed_dofs.size() == fixed_values.size());
+
+  for (size_t i = 0; i < fixed_dofs.size(); ++i) {
+    int dof = fixed_dofs[i];
+    double val = fixed_values[i];
+
+    K.row(dof).setZero();
+    K.col(dof).setZero();
+    K.coeffRef(dof, dof) = 1.0;
+
+    F[dof] = val;
+  }
+
+  /* =========================
+     4. Solve
+     ========================= */
+
+  Eigen::SimplicialLDLT<SparseMatrix<double>> solver;
+  solver.compute(K);
+  assert(solver.info() == Eigen::Success);
+
+  U = solver.solve(F);
+  assert(solver.info() == Eigen::Success);
+
+  /* =========================
+     5. Post-processing
+     ========================= */
+
+  FemResult result;
+  result.disp.resize(nodes.size());
+
+  for (size_t i = 0; i < nodes.size(); ++i)
+    result.disp[i] = {U[2 * i], U[2 * i + 1]};
+
+  result.stress.reserve(elems.size());
+
+  for (const auto &e : elems) {
+    VectorXd ue(6);
+    ue << U[2 * e[0]], U[2 * e[0] + 1], U[2 * e[1]], U[2 * e[1] + 1],
+        U[2 * e[2]], U[2 * e[2] + 1];
+
+    Eigen::Vector3d sigma = compute_element_stress(e, nodes, ue);
+    result.stress.push_back(sigma);
+  }
+
+  return result;
+}
 
 double area(Node i, Node j, Node k) {
   return 0.5 * (i.x * (j.y - k.y) + j.x * (k.y - i.y) + k.x * (i.y - j.y));
