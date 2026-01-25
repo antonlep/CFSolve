@@ -15,7 +15,6 @@ from PySide6.QtWidgets import (
 )
 
 from solver_helpers import solve_from_raw
-import solver
 
 
 class MainWindow(QMainWindow):
@@ -120,12 +119,6 @@ class MainWindow(QMainWindow):
         celltypes = [pv.CellType.TRIANGLE] * len(elements)
         points = [[x, y, 0.0] for x, y in nodes]
         grid = pv.UnstructuredGrid(cells, celltypes, points)
-        inp = solver.SolverInput()
-        inp.nodes = [solver.Node(x, y) for x, y in nodes]
-        inp.elements = elements
-        inp.fixed_dofs = fixed
-        inp.fixed_values = displacements
-        inp.forces = forces
         results = solve_from_raw(nodes, elements, fixed, displacements, forces)
         result = self.box5.currentText()
         if result == "stress x":

@@ -22,6 +22,15 @@ SolverOutput fem_solve(const SolverInput &input) {
   Eigen::VectorXd F =
       Eigen::Map<const Eigen::VectorXd>(input.forces.data(), ndof);
 
+  assert(K.rows() == K.cols());
+  assert(K.rows() == ndof);
+
+  if (!K.allFinite())
+    throw std::runtime_error("Stiffness matrix contains NaN/Inf");
+
+  if (!F.allFinite())
+    throw std::runtime_error("Load vector contains NaN/Inf");
+
   // Apply Dirichlet BC
   for (size_t i = 0; i < input.fixed_dofs.size(); i++) {
     size_t d = input.fixed_dofs[i];
@@ -48,6 +57,10 @@ SolverOutput fem_solve(const SolverInput &input) {
     u(free[i]) = u_free(i);
   for (size_t i = 0; i < input.fixed_dofs.size(); i++)
     u(input.fixed_dofs[i]) = input.fixed_values[i];
+
+  if (!u.allFinite()) {
+    throw std::runtime_error("Solution vector contains NaN/Inf");
+  }
 
   SolverOutput out;
 

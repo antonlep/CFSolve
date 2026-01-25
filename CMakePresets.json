@@ -1,0 +1,14 @@
+{
+    "version": 3,
+    "configurePresets": [
+        {
+            "name": "default",
+            "generator": "Visual Studio 17 2022",
+            "binaryDir": "${sourceDir}/build",
+            "cacheVariables": {
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+                "pybind11_DIR": "C:/Users/anton/CFSolve/.venv/Lib/site-packages/pybind11/share/cmake/pybind11"
+            }
+        }
+    ]
+}
