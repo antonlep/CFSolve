@@ -1,6 +1,7 @@
 #include "fem_solve.h"
 #include "fem_element.h"
 #include <Eigen/Dense>
+#include <cassert>
 #include <unordered_set>
 
 SolverOutput fem_solve(const SolverInput &input) {
