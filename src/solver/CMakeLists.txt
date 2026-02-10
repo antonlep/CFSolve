@@ -1,24 +1,31 @@
 cmake_minimum_required(VERSION 3.19)
 project(solver LANGUAGES CXX)
 
-# -------------------------
-# pybind11 (always fetched, never manual)
-# -------------------------
-find_package(pybind11 CONFIG REQUIRED)
-
-include(FetchContent)
-
-FetchContent_Declare(
-  pybind11
-  GIT_REPOSITORY https://github.com/pybind/pybind11.git
-  GIT_TAG v3.0.1
-)
-
 option(CFS_FETCH_PYBIND11 "Fetch pybind11 if not found" ON)
 
-if (CFS_FETCH_PYBIND11)
-  FetchContent_MakeAvailable(pybind11)
+# Always use modern Python discovery
+set(PYBIND11_FINDPYTHON ON)
+
+find_package(Python REQUIRED COMPONENTS Interpreter Development.Module)
+find_package(pybind11 CONFIG QUIET)
+
+if (NOT pybind11_FOUND)
+  if (CFS_FETCH_PYBIND11)
+    message(STATUS "pybind11 not found, fetching via FetchContent")
+    include(FetchContent)
+    FetchContent_Declare(
+      pybind11
+      GIT_REPOSITORY https://github.com/pybind/pybind11.git
+      GIT_TAG v3.0.1
+    )
+    FetchContent_MakeAvailable(pybind11)
+  else()
+    message(FATAL_ERROR "pybind11 not found and fetching disabled")
+  endif()
 endif()
+
+# Your module
+pybind11_add_module(_solver src/solver/bindings.cpp)
 
 # -------------------------
 # Core C++ library
